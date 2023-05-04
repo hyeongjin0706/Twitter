@@ -13,14 +13,17 @@ let users = [
 export async function searchID(username) {
     return users.find((users) => users.username === username);
 }
+
+export async function findById(id) {
+    return users.find((user) => user.id === id)
+}
+
 export async function createUser(user) {
     const created = {...user, id: Date.now().toString()};
     users.push(created);
     return created.id;
 }
 
-
-
 export async function login(user) {
-    return users.filter((users) => users.username === user.username && users.password === user.password);
+    return users.find((users) => users.username === user.username && users.password === user.password);
 }

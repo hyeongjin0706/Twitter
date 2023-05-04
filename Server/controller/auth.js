@@ -70,7 +70,11 @@ export async function login(req, res) {
 }
 
 export async function me(req, res, next) {
-    
+    const user = await(userRepository.findById(req.userId));
+    if(!user){
+        return res.status(404).json({message: "사용자가 존재하지 않습니다."})
+    }
+    res.status(200).json({token:req.token, username: user.username})
 }
 
 function createJwtToken(id) {
