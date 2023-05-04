@@ -1,12 +1,14 @@
 export default class TweetService {
   // 네트워크를 통해 데이터 가져오기
-  constructor(http) {
+  constructor(http, tokenStorage) {
     this.http = http;
+    this.tokenStorage = tokenStorage;
   }
 
   async getTweets(username) {
     const query = username ? `?username=${username}` : '';
-    return this.http.fetch(`/tweets${query}`, {method:"GET"});
+    console.log(this.tokenStorage.getToken());
+    return this.http.fetch(`/tweets${query}`, {method:"GET", token:this.tokenStorage.getToken()});
     // if (username) {
     //   return fetch(`http://localhost:8080/tweets?username=${username}`)
     //     .then((response) => response.json())

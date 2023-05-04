@@ -2,7 +2,7 @@
 let users = [
     {
         id: "1",
-        username: "melon",
+        username: "abcd1234",
         password: "$2b$10$2RNDKVhfDueHOjh6QrCWJe7YuIHHfKVCRLUy07nuMbxlp1VHxfdWy",
         name: "이메론",
         email: "melon@melon.com",

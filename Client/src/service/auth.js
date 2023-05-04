@@ -1,16 +1,26 @@
 export default class AuthService {
+  constructor(http, tokenStorage){
+    this.http = http;
+    this.tokenStorage = tokenStorage;
+  }
+
   async login(username, password) {
-    return {
-      username: 'admin',
-      token: 'abc1234',
-    };
+    const data = await this.http.fetch("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username,
+        password
+      })
+    });
+    this.tokenStorage.saveToken(data.token);
+    return data;
   }
 
   async me() {
-    return {
-      username: 'admin',
-      token: 'abc1234',
-    };
+    console.log("들어옴!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    const data = await this.http.fetch("/auth/me", {method: "GET", headers:this.tokenStorage.getToken()});
+    console.log("들어옴222222222222222222222");
+    return data;
   }
 
   async logout() {
@@ -18,9 +28,17 @@ export default class AuthService {
   }
 
   async signup(username, password, name, email, url) {
-    return {
-      username: 'admin',
-      token: 'abc1234',
-    };
+    const data = await this.http.fetch("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({
+        username,
+        password,
+        name,
+        email,
+        url
+      })
+    });
+    this.tokenStorage.saveToken(data.token);
+    return data;
   }
 }
