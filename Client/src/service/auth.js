@@ -17,9 +17,7 @@ export default class AuthService {
   }
 
   async me() {
-    console.log("들어옴!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    const data = await this.http.fetch("/auth/me", {method: "GET", headers:this.tokenStorage.getToken()});
-    console.log("들어옴222222222222222222222");
+    const data = await this.http.fetch("/auth/me");
     return data;
   }
 

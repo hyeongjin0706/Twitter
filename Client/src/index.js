@@ -16,6 +16,7 @@ const tokenStorage = new TokenStorage();
 const httpClient = new HttpClient(baseURL); 
 const authErrorEventBus = new AuthErrorEventBus();
 const authService = new AuthService(httpClient, tokenStorage);
+// 로그인과 동일하게 tokenStorage를 추가
 const tweetService = new TweetService(httpClient, tokenStorage);
 
 ReactDOM.render(

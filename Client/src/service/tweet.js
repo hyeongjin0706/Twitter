@@ -2,13 +2,16 @@ export default class TweetService {
   // 네트워크를 통해 데이터 가져오기
   constructor(http, tokenStorage) {
     this.http = http;
+    // tokenStorage를 프로퍼티에 추가
     this.tokenStorage = tokenStorage;
   }
 
   async getTweets(username) {
     const query = username ? `?username=${username}` : '';
-    console.log(this.tokenStorage.getToken());
-    return this.http.fetch(`/tweets${query}`, {method:"GET", token:this.tokenStorage.getToken()});
+    return this.http.fetch(`/tweets${query}`, {
+      method:"GET", 
+      headers: this.getHeaders()
+    });
     // if (username) {
     //   return fetch(`http://localhost:8080/tweets?username=${username}`)
     //     .then((response) => response.json())
@@ -25,7 +28,8 @@ export default class TweetService {
     // fetch를 통해 /tweets post로 입력한 데이터를 전송
     return this.http.fetch("/tweets", {
       method:"POST",
-      body: JSON.stringify({text, username:"admin", name:"admin"})
+      body: JSON.stringify({text, username:"admin", name:"admin"}),
+      headers: this.getHeaders()
     });
 
     // const data = {
@@ -47,7 +51,8 @@ export default class TweetService {
 
   async deleteTweet(tweetId) {
     return this.http.fetch(`/tweets/${tweetId}`,{
-      method: "DELETE"
+      method: "DELETE",
+      headers: this.getHeaders()
     });
     // const options = {method: 'DELETE'}
     // return fetch(`http://localhost:8080/tweets/${tweetId}`, options);
@@ -56,7 +61,8 @@ export default class TweetService {
   async updateTweet(tweetId, text) {
     return this.http.fetch(`/tweets/${tweetId}`,{
       method: "PUT",
-      body:JSON.stringify({text})
+      body:JSON.stringify({text}),
+      headers: this.getHeaders()
     });
     // const data = {
     //   text
@@ -69,5 +75,13 @@ export default class TweetService {
     //     body:JSON.stringify(data)
     //   }
     //   return fetch(`http://localhost:8080/tweets/${tweetId}`, options);
+  }
+
+  // 토큰을 얻어내는 함수
+  getHeaders(){
+    const token = this.tokenStorage.getToken();
+    return {
+      Authorization: `Bearer ${token}`
+    };
   }
 }
