@@ -17,12 +17,15 @@ export default class AuthService {
   }
 
   async me() {
-    const data = await this.http.fetch("/auth/me");
-    return data;
+    const token = this.tokenStorage.getToken();
+    return this.http.fetch('/auth/me', {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
   }
-
+  
   async logout() {
-    return;
+    this.tokenStorage.clearToken();
   }
 
   async signup(username, password, name, email, url) {

@@ -28,7 +28,7 @@ export default class TweetService {
     // fetch를 통해 /tweets post로 입력한 데이터를 전송
     return this.http.fetch("/tweets", {
       method:"POST",
-      body: JSON.stringify({text, username:"admin", name:"admin"}),
+      body: JSON.stringify({text, username:"abcd1234", name:"abcd1234"}),
       headers: this.getHeaders()
     });
 
