@@ -38,7 +38,7 @@ export async function login(req, res) {
     if (!user) {
         return res.status(401).json({message: "요청한 아이디가 존재하지 않습니다"})
     }
-
+    
     const isValidpassword = await(bcrypt.compare(password, user.password));
     if(!isValidpassword){
         return res.status(401).json({message: "아이디 또는 비밀번호를 확인하세요"})

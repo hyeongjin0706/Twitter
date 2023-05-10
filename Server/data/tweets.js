@@ -1,59 +1,29 @@
 import * as userRepository from "../data/auth.js"
+import {db} from "../db/database.js"
 
-let tweets = [
-    {
-        id:"1",
-        text:"첫 트윗입니다!!",
-        createdAt: Date.now().toString(),
-        userId:"1"
-    },
-    {
-        id:"2",
-        text:"안녕하세요!!",
-        createdAt: Date.now().toString(),
-        userId:"1"
-    }
-];
+const SELECT_JOIN = "select tw.id, tw.text, tw.createdAt, tw.userId, us.username, us.name, us.email, us.url from tweets as tw left outer join users as us on tw.userId = us.id";
+const ORDER_DESC = "order by tw.createdAt desc";
 
-export async function getAllByUsername(username) {
-    return getAll().then((tweets) => tweets.filter((tweet) => tweet.username === username));
+export async function getAllByUsername(username) { 
+    return db.execute(`${SELECT_JOIN} WHERE US.USERNAME=? ${ORDER_DESC}`,[username]).then((result) => result[0]);
 }
 
 export async function getAll(){
-    return Promise.all(
-        tweets.map(async (tweet) => {
-            const {username, name, url} = await userRepository.findById(tweet.userId);
-            return {...tweet, username, name, url}
-        })
-    )
+    return db.execute(`${SELECT_JOIN} ${ORDER_DESC}`).then((result) => result[0]);
 }
 
 export async function getById(id) {
-    const found = tweets.find((tweet) => tweet.id === id);
-    if (!found) {
-        return null;
-    }
-    const {username,name,url} = await userRepository.findById(found.userId);
-    return {...found, username, name, url}
+    return db.execute(`${SELECT_JOIN} WHERE TW.ID=?`, [id]).then((result) => result[0][0]);
 }
 
 export async function addTweet(text, userId) {
-    const tweet = {
-        id: Date.now().toString(),
-        text,
-        createdAt: new Date(),
-        userId
-    };
-    tweets = [tweet, ...tweets]
-    return getById(tweet.id);
+    return db.execute("insert into tweets (text, createdAt,userId) values (?,?,?)", [text, new Date(), userId]).then((result) => console.log(result));
 }
 
 export async function setTweet(id,text) {
-    const tweet = await(getById(id));
-    tweet.text = text;
-    return tweet;
+    return db.execute("update tweets SET text=? where id=?",[text,id]).then(()=> getById(id));
 }
 
 export async function deleteTweet(id) {
-    tweets = tweets.filter((tweet) => tweet.id !== id);
+    return db.execute("delete from tweets where id=?",[id]);
 }
