@@ -5,7 +5,7 @@ import tweetsRouter from "./router/tweets.js";
 import authRouter from "./router/auth.js";
 import {config} from "./config.js";
 import {initSocket} from "./connection/socket.js";
-import {db} from "./db/database.js"
+import {sequelize} from "./db/database.js"
 
 const app = express();
 
@@ -27,5 +27,8 @@ app.use((error, req, res, next) => {
 
 // db.getConnection().then((connection) => console.log(connection));
 
-const sever = app.listen(config.host.port);
-initSocket(sever);
+sequelize.sync().then(() => {
+    // console.log(client); // sequelize 객체 출력됨
+    const sever = app.listen(config.host.port);
+    initSocket(sever);
+});

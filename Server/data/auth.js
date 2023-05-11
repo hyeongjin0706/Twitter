@@ -1,19 +1,52 @@
-import {db} from "../db/database.js"
+import SQ from "sequelize";
+import {sequelize} from "../db/database.js";
+const DataTypes = SQ.DataTypes;
+
+// 기존의 테이블이 없으면 테이블을 생성하고, 있으면 생성하지 않음
+// 뒤에 s가 붙음
+export const User = sequelize.define(
+    "user",
+    {
+        id:{
+            type:DataTypes.INTEGER,
+            autoIncrement: true,
+            allowNull: false,
+            primaryKey: true
+        },
+        username:{
+            type:DataTypes.STRING(45),
+            allowNull:false
+        },
+        password:{
+            type:DataTypes.STRING(128),
+            allowNull:false
+        },
+        name:{
+            type:DataTypes.STRING(45),
+            allowNull:false
+        },
+        email:{
+            type:DataTypes.STRING(128),
+            allowNull:false
+        },
+        url:DataTypes.TEXT,
+        regdate:{
+            type:DataTypes.DATE, 
+            defaultValue: DataTypes.NOW
+        }
+        // regdate:날짜타입, 현재시간을 자동으로 등록
+    },
+    {timestamps: false} // true면 createdAt, updatedAt 컬럼이 자동으로 생김
+);
 
 export async function searchID(username) {
-    return db.execute("select * from users where username=?",[username]).then((result) => result[0][0]);
+    return User.findOne({where: {username}});
 }
 
 export async function findById(id) {
-    return db.execute("select id from users where id=?",[id]).then((result) => result[0][0]);
+    return User.findByPk(id);
 }
 
 export async function createUser(user) {
-    const {username,password,name,email,url} = user;
-    return db.execute("insert into users(username,password,name,email,url) values(?,?,?,?,?)", [username,password,name,email,url]).then((result) => result[0].insertID);
-}
-
-export async function login(user) {
-    // return users.find((users) => users.username === user.username && users.password === user.password);
-    return db.execute("select id from users where username=? and password=?",[user.username,user.password]).then((result) => result[0][0]);
+    return User.create(user).then((data)=>data.dataValues.id);
 }
