@@ -1,52 +1,21 @@
-import SQ from "sequelize";
-import {sequelize} from "../db/database.js";
-const DataTypes = SQ.DataTypes;
+import {getUsers} from "../db/database.js";
+import MongoDB from "mongodb";
 
-// 기존의 테이블이 없으면 테이블을 생성하고, 있으면 생성하지 않음
-// 뒤에 s가 붙음
-export const User = sequelize.define(
-    "user",
-    {
-        id:{
-            type:DataTypes.INTEGER,
-            autoIncrement: true,
-            allowNull: false,
-            primaryKey: true
-        },
-        username:{
-            type:DataTypes.STRING(45),
-            allowNull:false
-        },
-        password:{
-            type:DataTypes.STRING(128),
-            allowNull:false
-        },
-        name:{
-            type:DataTypes.STRING(45),
-            allowNull:false
-        },
-        email:{
-            type:DataTypes.STRING(128),
-            allowNull:false
-        },
-        url:DataTypes.TEXT,
-        regdate:{
-            type:DataTypes.DATE, 
-            defaultValue: DataTypes.NOW
-        }
-        // regdate:날짜타입, 현재시간을 자동으로 등록
-    },
-    {timestamps: false} // true면 createdAt, updatedAt 컬럼이 자동으로 생김
-);
+const ObjectID = MongoDB.ObjectId;
 
 export async function searchID(username) {
-    return User.findOne({where: {username}});
+    return getUsers.findOne({username}).then((data) => {
+        console.log(data);
+    });
 }
 
 export async function findById(id) {
-    return User.findByPk(id);
+    return null;
 }
 
 export async function createUser(user) {
-    return User.create(user).then((data)=>data.dataValues.id);
+    return getUsers().insertOne(user).then((result) => {
+        console.log(result);
+        // result.ops[0]._id.toString();
+    });
 }
