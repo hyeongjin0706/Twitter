@@ -4,13 +4,20 @@ import MongoDB from "mongodb";
 const ObjectID = MongoDB.ObjectId;
 
 export async function searchID(username) {
-    return getUsers.findOne({username}).then((data) => {
-        console.log(data);
-    });
+    return getUsers().find({username})
+    .next()
+    .then(mapOptionalUser);
 }
 
 export async function findById(id) {
-    return null;
+    return getUsers()
+    .find({ _id: new ObjectID(id)})
+    .next()
+    .then(mapOptionalUser);
+}
+
+function mapOptionalUser(user) {
+    return user ? {...user, id:user._id.toString()} : user;
 }
 
 export async function createUser(user) {

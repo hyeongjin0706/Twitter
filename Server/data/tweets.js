@@ -1,88 +1,54 @@
-// import SQ, { Sequelize } from "sequelize";
-// import {User} from "../data/auth.js";
-// import {sequelize} from "../db/database.js";
+import MongoDB from "mongodb";
+import * as userRepository from "../data/auth.js";
+import {getTweets} from "../db/database.js";
 
-// const DataTypes = SQ.DataTypes;
+const ObjectID = MongoDB.ObjectId;
+const desc = {createdAt: -1};
 
-// export const Tweet = sequelize.define(
-//     "tweet",
-//     {
-//         id:{
-//             type:DataTypes.INTEGER,
-//             autoIncrement: true,
-//             allowNull: false,
-//             primaryKey: true
-//         },
-//         text:{
-//             type:DataTypes.TEXT,
-//             allowNull:false
-//         }
-//     }
-// );
+export async function getAllByUsername(username) { 
+    return getTweets().find({username}).sort(desc).toArray().then(mapTweets);
+}
 
-// Tweet.belongsTo(User);
-// // 객체를 생성
-// // attributes 키값에 배열을 선언
-// // join문을 사용할 때 보고싶은 컬럼을 적음
-// // user테이블에 들어가 있는 컬럼들은 Sequelize.col로 밖으로 뺌
+export async function getAll(){
+    return getTweets().find({}).sort(desc).toArray().then(mapTweets);
+}
 
-// const INCLUDE_USER = {
-//     attributes:[
-//         "id",
-//         "text",
-//         "createdAt",
-//         "userId",
-//         [Sequelize.col("user.name"), "name"],
-//         [Sequelize.col("user.username"), "username"],
-//         [Sequelize.col("user.url"), "url"],
-//     ],
-//     include:{
-//         model:User,
-//         attributes: [] // 같은 키 이름 그대로 복사
-//     }
-// }
+export async function getById(id) {
+    return getTweets().find({ _id: new ObjectID(id)}).next().then(mapOptionalTweet);
+}
 
-// const ORDER_DESC ={
-//     order: [["createdAt", "DESC"]]
-// }
+export async function addTweet(text, userId) {
+    return userRepository.findById(userId)
+    .then((user) => getTweets().insertOne({
+        text,
+        createdAt: new Date(),
+        userId,
+        name: user.name,
+        username: user.username,
+        url: user.url
+    })).then((result) => console.log(result.ops)).then(mapOptionalTweet);
+}
 
-// export async function getAllByUsername(username) { 
-//     return Tweet.findAll({
-//         ...INCLUDE_USER, 
-//         ...ORDER_DESC,
-//         include: {
-//             ...INCLUDE_USER.include,
-//             where:{username}
-//         }
-//     });
-// }
+export async function setTweet(id,text) {
+    // getTweets().updateOne({ _id: new ObjectID(id)}, {$set:{text}});
+    // return getById(id);
+    return getTweets().findOneAndUpdate(
+        {_id: new ObjectID(id)},
+        { $set:{text}},
+        {returnOriginal:false} // false로 바꿔서 변경후의 데이터를 가져옴
+    )
+    .then((result) => result.value)
+    .then(mapOptionalTweet);
+}
 
-// export async function getAll(){
-//     return Tweet.findAll({...INCLUDE_USER, ...ORDER_DESC});
-// }
+export async function deleteTweet(id) {
+    return getTweets().deleteOne({ _id: new ObjectID(id)});
+}
 
-// export async function getById(id) {
-//     return Tweet.findOne({
-//         where:{id},
-//         ...INCLUDE_USER
-//     });
-// }
+function mapOptionalTweet(tweet) {
+    return tweet ? {...tweet, id: tweet._id.toString()} : tweet;
+}
 
-// export async function addTweet(text, userId) {
-//     return Tweet.create({text,userId});
-// }
-
-// export async function setTweet(id,text) {
-//     return Tweet.findByPk(id, INCLUDE_USER).then((tweet) => {
-//         tweet.text = text;
-//         return tweet.save();
-//     });
-//     // return Tweet.update({text},{where: {id}}).then(() => getById(id));
-// }
-
-// export async function deleteTweet(id) {
-//     return Tweet.findByPk(id).then((tweet) => {
-//         tweet.destroy();
-//     });
-//     // return Tweet.destroy({where:{id}});
-// }
+function mapTweets(tweets) {
+    return tweets.map(mapOptionalTweet);
+}
