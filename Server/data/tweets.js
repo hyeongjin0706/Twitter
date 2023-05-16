@@ -1,54 +1,52 @@
 import MongoDB from "mongodb";
+import Mongoose from "mongoose";
 import * as userRepository from "../data/auth.js";
-import {getTweets} from "../db/database.js";
+import {getTweets, useVirtualId} from "../db/database.js";
 
-const ObjectID = MongoDB.ObjectId;
-const desc = {createdAt: -1};
+const tweetSchema = new Mongoose.Schema({
+    text:{type:String, required: true},
+    userId:{type:String, required: true},
+    name:{type:String, required: true},
+    username:{type:String, required: true},
+    url: String
+}, {timestamps:true})
+
+useVirtualId(tweetSchema);
+const Tweet = Mongoose.model("Tweet", tweetSchema)
+
 
 export async function getAllByUsername(username) { 
-    return getTweets().find({username}).sort(desc).toArray().then(mapTweets);
+    return Tweet.find({username}).sort({createdAt:-1});
 }
 
 export async function getAll(){
-    return getTweets().find({}).sort(desc).toArray().then(mapTweets);
+    return Tweet.find().sort({createdAt: -1});
 }
 
 export async function getById(id) {
-    return getTweets().find({ _id: new ObjectID(id)}).next().then(mapOptionalTweet);
+    return Tweet.findById(id);
 }
 
 export async function addTweet(text, userId) {
     return userRepository.findById(userId)
-    .then((user) => getTweets().insertOne({
+    .then((user) => new Tweet({
         text,
-        createdAt: new Date(),
         userId,
         name: user.name,
-        username: user.username,
-        url: user.url
-    })).then((result) => console.log(result.ops)).then(mapOptionalTweet);
+        username: user.username
+    }).save());
 }
 
 export async function setTweet(id,text) {
     // getTweets().updateOne({ _id: new ObjectID(id)}, {$set:{text}});
     // return getById(id);
-    return getTweets().findOneAndUpdate(
-        {_id: new ObjectID(id)},
+    return Tweet.findOneAndUpdate(
+        {_id: id},
         { $set:{text}},
         {returnOriginal:false} // false로 바꿔서 변경후의 데이터를 가져옴
-    )
-    .then((result) => result.value)
-    .then(mapOptionalTweet);
+    );
 }
 
 export async function deleteTweet(id) {
-    return getTweets().deleteOne({ _id: new ObjectID(id)});
-}
-
-function mapOptionalTweet(tweet) {
-    return tweet ? {...tweet, id: tweet._id.toString()} : tweet;
-}
-
-function mapTweets(tweets) {
-    return tweets.map(mapOptionalTweet);
+    return Tweet().deleteOne({ _id: id});
 }
